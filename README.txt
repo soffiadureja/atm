@@ -15,8 +15,5 @@ Main method
 =========================
 Please execute main method in ATMApplication.java to start the embedded tomcat server.
 
-Without Authentication
-========================
-
 'AutomatedTellerMachine' provides a token based authentication. How ever authentication is disabled by default.
 by setting property ignoreAuth to true in env.properties. Default value is true.
