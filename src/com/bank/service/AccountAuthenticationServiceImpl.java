@@ -3,6 +3,7 @@ package com.bank.service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
     @Value("${ignoreAuth}")
     private boolean ignoreAuth;
 
-    Map<Long, String> authDetails = new HashMap<Long, String>();
+    ConcurrentHashMap<Long, String> authDetails = new ConcurrentHashMap<Long, String>();
 
     public String generateToken(Account account) {
         boolean result = accountRepository.verifyAccount(account);
