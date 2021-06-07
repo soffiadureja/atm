@@ -1,6 +1,9 @@
 package com.bank.rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,68 +28,71 @@ public class TellerServiceController {
 	private AccountAuthenticationService authenticationService;
 
     @RequestMapping(value = "/gettoken", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody String authorize(@RequestBody @Valid Account account) {
-        return authenticationService.generateToken(account);
+	public @ResponseBody ResponseEntity authorize(@RequestBody @Valid Account account) {
+        return new ResponseEntity(authenticationService.generateToken(account), HttpStatus.OK);
     }
 
     @RequestMapping("/withdraw/{token}/{accountnumber}/{amount}")
-    public @ResponseBody String withdraw(@PathVariable(value = "token") String token, @PathVariable(value = "accountnumber") long accountNumber, @PathVariable(value = "amount") int amount) {
+	public @ResponseBody ResponseEntity withdraw(@PathVariable(value = "token") String token,
+			@PathVariable(value = "accountnumber") long accountNumber, @PathVariable(value = "amount") int amount) {
         try {
             if (authenticationService.verifyToken(accountNumber, token)) {
                 if (tellerService.withdraw(accountNumber, amount)) {
-                    return "Success";
+                	return new ResponseEntity("Success", HttpStatus.OK);
                 } else {
-                    return "Error occured while updating your account";
+                	return new ResponseEntity("Error occured while updating your account", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             } else {
-                return "Invalid Token";
+            	return new ResponseEntity("Invalid Token", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
             e.printStackTrace();
-			throw new Exception("Error occured while updating your account" + e.getMessage(), e);
+            return new ResponseEntity("Error occured while updating your account: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @RequestMapping("/checkbalance/{token}/{accountnumber}")
-    public @ResponseBody double checkBalance(@PathVariable(value = "token") String token, @PathVariable(value = "accountnumber") long accountNumber) {
+	public @ResponseBody ResponseEntity checkBalance(@PathVariable(value = "token") String token,
+			@PathVariable(value = "accountnumber") long accountNumber) {
         try {
             if (authenticationService.verifyToken(accountNumber, token)) {
-                return tellerService.checkBalance(accountNumber);
+				return new ResponseEntity("tellerService.checkBalance(accountNumber)", HttpStatus.OK);
             } else {
-                return 0;
+            	return new ResponseEntity("Invalid Token", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return 0.0;
+            return new ResponseEntity("Error occured while retrieving balance: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @RequestMapping("/deposit/{token}/{accountnumber}/{amount}")
-    public @ResponseBody String deposit(@PathVariable(value = "token") String token, @PathVariable(value = "accountnumber") long accountNumber, @PathVariable(value = "amount") int amount) {
+	public @ResponseBody ResponseEntity deposit(@PathVariable(value = "token") String token,
+			@PathVariable(value = "accountnumber") long accountNumber, @PathVariable(value = "amount") int amount) {
         try {
             if (authenticationService.verifyToken(accountNumber, token)) {
                 if (tellerService.deposit(accountNumber, amount)) {
-                    return "Success";
+                    return new ResponseEntity("Success", HttpStatus.OK);
                 } else {
-                    return "Error occured while updating your account";
+                    return new ResponseEntity("Error occured while updating your account", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             } else {
-                return "Invalid Token";
+                return new ResponseEntity("Invalid Token", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
             e.printStackTrace();
-			throw new Exception("Error occured while updating your account" + e.getMessage(), e);
+            return new ResponseEntity("Error occured while updating your account: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 	@RequestMapping("/create/{accountname}/{pin}")
-	public @ResponseBody String deposit(@PathVariable(value = "accountname") String accountName,
+	public @ResponseBody ResponseEntity createAccount(@PathVariable(value = "accountname") String accountName,
 			@PathVariable(value = "pin") int pin) {
 		try {
-			return "Account created with ID: " + tellerService.createAccount(accountName, pin);
+			return new ResponseEntity("Account created with ID: " + tellerService.createAccount(accountName, pin), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new Exception("Error occured while creating your account" + e.getMessage(), e);
+			return new ResponseEntity("Error occured while creating your account: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
